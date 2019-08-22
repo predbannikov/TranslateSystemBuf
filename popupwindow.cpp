@@ -31,12 +31,16 @@ void PopupWindow::hideFromTaskBar(QWidget* widget)
 bool PopupWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if(event->type() == QEvent::FocusOut) {
-        if(obj->objectName() == "notify") {
-            timerNotify.stop();
-            timerNotify.start(waitAfterReleaseFocusNotify);
-        } else if(obj->objectName() == "button") {
+        if(obj->objectName() == "button") {
             timerShow.stop();
             timerShow.start(100);
+        } else {
+            qDebug() << "focus out" << obj->objectName();
+            if(!notify->isActiveWindow()) {
+                timerNotify.stop();
+                timerNotify.start(waitAfterReleaseFocusNotify);
+
+            }
         }
         return true;
     } else if(event->type() == QEvent::HoverEnter) {
@@ -77,12 +81,12 @@ void PopupWindow::showPopUpWindow()
 void PopupWindow::showPopUpNotify()
 {
     if(notify->isVisible()) {
-        notify->setText("new");
+        notify->setText(resultMsg);
         notify->activateWindow();
     } else {
         notify->setFocus();
         notify->move(QCursor::pos());
-        notify->setText(resultMsg.join("\n"));
+        notify->setText(resultMsg);
         notify->show();
         timerNotify.setSingleShot(true);
 //        timerNotify.start(waitAfterReleaseFocusNotify);
@@ -110,7 +114,7 @@ void PopupWindow::parsArray(QJsonArray jarray)
             if(!jarray[i].toString().isEmpty()) {
                 if(jarray[i].toString() != "en") {
                     resultMsg << jarray[i].toString();
-                    qDebug() << qPrintable(jarray[i].toString()) ;
+//                    qDebug() << qPrintable(jarray[i].toString()) ;
                 }
             }
         }
